@@ -1,12 +1,13 @@
 const express = require('express');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
+const Blog = require('./models/blog');
 
 // express app
 const app = express();
 
 // connect to mongoDB
-mongoose.connect('mongodb://localhost/blog-ninja', {useNewUrlParser: true, useUnifiedTopology: true})
+mongoose.connect('mongodb://localhost/blogNinja', {useNewUrlParser: true, useUnifiedTopology: true})
         .then(() => app.listen(3000))
         .catch(err => console.log(err));
 
@@ -18,18 +19,23 @@ app.use(morgan('dev'));
 // register view engine
 app.set('view engine', 'ejs');
 
+// basic routes
 app.get('/', (req, res) => {
-    const blogs = [
-        {title: 'Coding and Music', snippet: 'lorem ipsum lorem ninja coding lorem ipsum music'},
-        {title: 'Production company', snippet: 'lorem ipsum lorem ninja coding lorem ipsum music'},
-        {title: 'Def Jam Music', snippet: 'lorem ipsum lorem ninja coding lorem ipsum music'}
-    ];
-
-    res.render('index', {title: 'Home', blogs});
+    res.redirect('/blogs');
 });
 
 app.get('/about', (req, res) => {
     res.render('about', {title: 'About'});
+});
+
+// blog routes
+app.get('/blogs', (req, res) => {
+    Blog.find().sort({ createdAt: -1 })
+        .then(result => {
+            res.render('index', {title: 'All Blogs', blogs: result});
+        })
+        .catch(err => console.log(err));
+    
 });
 
 app.get('/blogs/create', (req, res) => {
